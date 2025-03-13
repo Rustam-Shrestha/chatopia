@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";  // Ensure file extension is .js
 import bcrypt from "bcryptjs";
@@ -58,10 +59,77 @@ export const signup = async (req, res) => {
     }
 };
 
-export const logout = (req, res) => {
-    res.send("Logout");
+
+export const signin = async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ msg: "Please provide both email and password" });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ msg: "Invalid credentials" });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: "Invalid credentials" });
+        }
+        // Generate JWT token
+        generateToken(user._id, res);
+        res.json({
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            profilePic: user.profilePic
+        });
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ msg: "Server error" });
+    }
 };
 
-export const signin = (req, res) => {
-    res.send("Signin");
+export const logout = (req, res) => {
+    try {
+        res.cookie("jwt", "", {
+            maxAge: 0
+        });
+        res.status(200).json({ msg: "Logout successful" });
+    } catch (error) {
+
+    }
 };
+
+export const updateProfile = async (req, res) => {
+    const { fullName, profilePic } = req.body;
+    const { _id } = req.user;
+    if (!fullName || !profilePic) {
+        return res.status(400).json({
+            msg: "Please provide both fullName and profilePic"
+        });
+    }
+    try {
+        const {profilePic} = req.body;
+        const userId = req.user._id;
+        if(!profilePic){
+            return res.status(400).json({msg: "Please provide a profilePic"});
+        }
+        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        const updatedUser = User.findByIdAndUpdate(userId, {
+            profilePic: uploadResponse.secure_url
+        },{new:true})
+    } catch (error) {
+     console.error(error.message);
+     res.status(500).json({ msg: "Server error" }); 
+    }
+}
+
+export const checkAuth = async (req,res)=>{
+    try {
+        res.status(200).json(req.user);
+    } catch (error) {
+        console.log("Error in checkauth"+error.message)
+        res.status(500).json({ msg: "Server error" });
+    }
+}
