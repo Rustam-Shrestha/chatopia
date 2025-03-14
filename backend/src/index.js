@@ -5,7 +5,8 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 import authRoutes from "../routes/auth.route.js";
 import { connectDB } from "../lib/db.js";
-
+import Message from "../models/message.model.js";
+import messageRoutes from "../routes/message.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000; // Default to port 3000 if PORT is not defined
@@ -14,6 +15,7 @@ app.use(cookieParser());
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/message", messageRoutes);
 
 app.listen(PORT, () => {
     console.log(`Running on https://localhost:${PORT}`);
