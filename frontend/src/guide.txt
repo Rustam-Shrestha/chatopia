@@ -73,3 +73,15 @@ New-Item -Path . -Name "index.html" -ItemType "File"
 install daisy ui
 npm i -D daisyui@latest
 
+
+npm i axios zustand
+
+
+
+npm i cors
+
+
+npm i lucide-react
+
+
+npm i react-hot-toast 
