@@ -34,4 +34,43 @@ export const useAuthStore = create((set) => ({
       set({ isSigningUp: false });
     }
   },
+  logout: async () => {
+    try {
+      console.log("clicked logotu")
+      await axiosInstance.get("/auth/logout");
+      set({ authUser: null });
+      toast.success("Logout successful");
+    } catch (error) {
+      console.error("Error in logout:", error);
+      toast.error("An error occurred while logging out.");
+    }
+  },
+  login: async (data) => {
+    set({ isLoggingin: true });
+    try {
+      const response = await axiosInstance.post("/auth/signin", data);
+      toast.success("Login successful");
+      set({ authUser: response.data });
+    } catch (error) {
+      const errorMessage = error.response?.data?.msg || "Login failed!";
+      toast.error(errorMessage);
+    } finally {
+      set({ isLoggingin: false });
+    }
+
+  },
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const response = await axiosInstance.put("/auth/update-profile", data);
+      toast.success("Profile updated successfully!");
+      set({ authUser: response.data });
+    } catch (error) {
+      const errorMessage = error.response?.data?.msg || "Profile update failed!";
+      toast.error(errorMessage);
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  }
+
 }));
